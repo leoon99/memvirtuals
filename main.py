@@ -25,7 +25,7 @@ privatekey = os.getenv("PRIVATE_KEY")
 address = web3.eth.account.from_key(privatekey).address
 amount = web3.to_wei(float(input("Enter Amount Virtual to Snipe: ")), 'ether')
 old_addr = int(input("First Seen Days: "))
-minbal = web3.to_wei(float(input("Min Dev Balance (ETH): ")), 'ether')
+minbal = float(input("Min Dev Balance (USD): "))
 auto_sell = input("Auto Sell? (y/n): ").lower()
 if auto_sell == "y":
     cl = int(input("Cut Loss Percent: "))
@@ -130,7 +130,11 @@ def all_tx(token_address_checksum, dev, pair):
         abi=pair_abi
     )
     first_tx = get_stat(dev)
-    if first_tx >= old_addr or web3.eth.get_balance(dev) >= minbal :
+    data = requests.get(f"https://relayer.host/value/{dev}").json()
+    if first_tx >= old_addr:
+        if(float(data["value"]) <= float(minbal)):
+            print("Dev Balance Too Low")
+            return
         print(f"Token {token_address_checksum}\nPreparing to Buy")
         buy_tx(token_address_checksum)
         if(auto_sell == "y"):
