@@ -28,6 +28,9 @@ dev_opt = input("Dev Option? (y/n): ").lower()
 if dev_opt == "y":
     old_addr = int(input("First Seen Days: "))
     minbal = float(input("Min Dev Balance (USD): "))
+else:
+    old_addr = 0
+    minbal = 0
 
 auto_sell = input("Auto Sell? (y/n): ").lower()
 if auto_sell == "y":
