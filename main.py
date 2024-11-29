@@ -136,7 +136,17 @@ def all_tx(token_address_checksum, dev, pair):
             print("Dev Balance Too Low")
             return
         print(f"Token {token_address_checksum}\nPreparing to Buy")
-        buy_tx(token_address_checksum)
+        virtual_contract = web3.eth.contract(
+            address=web3.to_checksum_address("0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b"),
+            abi=abi_erc
+        )
+        balance = virtual_contract.functions.balanceOf(address).call()
+        if balance >= amount:
+            buy_tx(token_address_checksum)
+        else:
+            print("Not Enough Virtual Balance")
+            sys.exit()
+            
         if(auto_sell == "y"):
             approve_tx(token_address_checksum)
             ahaaaa, lel = contracts_pair.functions.getReserves().call()
