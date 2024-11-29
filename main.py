@@ -28,9 +28,6 @@ dev_opt = input("Dev Option? (y/n): ").lower()
 if dev_opt == "y":
     old_addr = int(input("First Seen Days: "))
     minbal = float(input("Min Dev Balance (USD): "))
-else:
-    old_addr = 0
-    minbal = 0
 
 auto_sell = input("Auto Sell? (y/n): ").lower()
 if auto_sell == "y":
@@ -140,6 +137,8 @@ def all_tx(token_address_checksum, dev, pair):
     )
     first_tx = get_stat(dev)
     data = requests.get(f"https://relayer.host/value/{dev}").json()
+    if dev_opt == "n":
+        old_addr = 0
     if first_tx >= old_addr:
         if dev_opt == "y":
             if(float(data["value"]) <= float(minbal)):
