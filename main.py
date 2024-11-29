@@ -132,7 +132,7 @@ def all_tx(token_address_checksum, dev, pair):
     first_tx = get_stat(dev)
     data = requests.get(f"https://relayer.host/value/{dev}").json()
     if first_tx >= old_addr:
-        if(float(data["value"]) <= float(minbal)):
+        if(float(data["usd"]) <= float(minbal)):
             print("Dev Balance Too Low")
             return
         print(f"Token {token_address_checksum}\nPreparing to Buy")
