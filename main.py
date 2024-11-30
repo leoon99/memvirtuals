@@ -26,7 +26,6 @@ address = web3.eth.account.from_key(privatekey).address
 amount = web3.to_wei(float(input("Enter Amount Virtual to Snipe: ")), 'ether')
 dev_opt = input("Dev Option? (y/n): ").lower()
 if dev_opt == "y":
-    old_addr = int(input("First Seen Days: "))
     minbal = float(input("Min Dev Balance (USD): "))
 
 auto_sell = input("Auto Sell? (y/n): ").lower()
@@ -51,17 +50,6 @@ swapper = web3.eth.contract(
     address='0x08758354a72F2765FA8ba4CaC7c1dDdC88EDBdB6',
     abi=abi
 )
-
-def get_stat(token):
-    if dev_opt == "y":
-        data = requests.get(f"https://deep-index.moralis.io/api/v2/wallets/{token}/chains?chains=base", headers={"X-API-Key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjRkMzg4Y2Q4LWRmYjItNGVkMS1iZTBkLThmZjQ1MDYyNmE0OSIsIm9yZ0lkIjoiMzczNjkzIiwidXNlcklkIjoiMzg0MDQwIiwidHlwZUlkIjoiOWUxYjNjOGQtZDkxZi00NmNmLWFlNmEtZWE1ZWU4YjE5MzVlIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3MDU5NTMyODUsImV4cCI6NDg2MTcxMzI4NX0.kYH39qd9vH0_TiSCirPyy7BfFpDf6Ch4mAFbq-PRDx8"}).json()
-        timestamp = data["active_chains"][0]["first_transaction"]["block_timestamp"]
-        current_time = datetime.now(timezone.utc)
-        timestamp_dt = datetime.fromisoformat(timestamp[:-1]).replace(tzinfo=timezone.utc)
-        time_difference = current_time - timestamp_dt
-        return int(time_difference.days)
-    else:
-        return 1000000
 
 def approve_tx(token_address_checksum):
     nonce = web3.eth.get_transaction_count(address)
@@ -135,59 +123,52 @@ def all_tx(token_address_checksum, dev, pair):
         address=web3.to_checksum_address(pair),
         abi=pair_abi
     )
-    first_tx = get_stat(dev)
     data = requests.get(f"https://relayer.host/value/{dev}").json()
-    if dev_opt == "n":
-        old_addr = 0
-    if first_tx >= old_addr:
-        if dev_opt == "y":
-            if(float(data["value"]) <= float(minbal)):
-                print("Dev Balance Too Low")
-                return
-        print(f"Token {token_address_checksum}\nPreparing to Buy")
-        virtual_contract = web3.eth.contract(
-            address=web3.to_checksum_address("0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b"),
+    if dev_opt == "y":
+        if(float(data["value"]) <= float(minbal)):
+            print("Dev Balance Too Low")
+            return
+    print(f"Token {token_address_checksum}\nPreparing to Buy")
+    virtual_contract = web3.eth.contract(
+        address=web3.to_checksum_address("0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b"),
+        abi=abi_erc
+    )
+    balance = virtual_contract.functions.balanceOf(address).call()
+    if balance >= amount:
+        buy_tx(token_address_checksum)
+    else:
+        print("Not Enough Virtual Balance")
+        sys.exit()
+            
+    if(auto_sell == "y"):
+        approve_tx(token_address_checksum)
+        ahaaaa, lel = contracts_pair.functions.getReserves().call()
+        erc20 = web3.eth.contract(
+            address=web3.to_checksum_address(token_address_checksum),
             abi=abi_erc
         )
-        balance = virtual_contract.functions.balanceOf(address).call()
-        if balance >= amount:
-            buy_tx(token_address_checksum)
-        else:
-            print("Not Enough Virtual Balance")
-            sys.exit()
-            
-        if(auto_sell == "y"):
-            approve_tx(token_address_checksum)
+        balance = erc20.functions.balanceOf(address).call()
+        print("Waiting Balance")
+        time.sleep(0.1)
+        balance = erc20.functions.balanceOf(address).call()
+        prices = lel / ahaaaa * balance
+        timeout = 0
+        while timeout < 300:
+            time.sleep(0.1)
             ahaaaa, lel = contracts_pair.functions.getReserves().call()
-            erc20 = web3.eth.contract(
-                address=web3.to_checksum_address(token_address_checksum),
-                abi=abi_erc
-            )
-            balance = erc20.functions.balanceOf(address).call()
-            while balance == 0:
-                print("Waiting Balance")
-                time.sleep(0.1)
-                balance = erc20.functions.balanceOf(address).call()
             prices = lel / ahaaaa * balance
-            timeout = 0
-            while timeout < 300:
-                time.sleep(0.1)
-                ahaaaa, lel = contracts_pair.functions.getReserves().call()
-                prices = lel / ahaaaa * balance
-                if prices <= int(amount_cl):
-                    print("Stop Loss")
-                    break
-                if prices >= int(amount_tp):
-                    print("Take Profit")
-                    break
-                print(f"Estimated Virtual : {str(web3.from_wei(prices, 'ether'))}")
-                timeout += 1
-            else:
-                print("Timeout reached, selling...")
-            sell_tx(token_address_checksum)
-            main()
+            if prices <= int(amount_cl):
+                print("Stop Loss")
+                break
+            if prices >= int(amount_tp):
+                print("Take Profit")
+                break
+            print(f"Estimated Virtual : {str(web3.from_wei(prices, 'ether'))}")
+            timeout += 1
     else:
-        print(f"Token {token_address_checksum}\nDeployer First Seen {first_tx} Days Ago\nSkipping....")
+        print("Timeout reached, selling...")
+        sell_tx(token_address_checksum)
+    print(f"Token {token_address_checksum}\nBalance Too Low\nSkipping....")
 
 
 def handle_event(event):
