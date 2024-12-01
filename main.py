@@ -153,7 +153,7 @@ def all_tx(token_address_checksum, dev, pair):
         balance = erc20.functions.balanceOf(address).call()
         prices = lel / ahaaaa * balance
         timeout = 0
-        while timeout < 300:
+        while True:
             time.sleep(0.1)
             ahaaaa, lel = contracts_pair.functions.getReserves().call()
             prices = lel / ahaaaa * balance
@@ -165,10 +165,12 @@ def all_tx(token_address_checksum, dev, pair):
                 break
             print(f"Estimated Virtual : {str(web3.from_wei(prices, 'ether'))}")
             timeout += 1
+            if timeout >= 300:  
+                print("Timeout reached, selling...")
+                break
+            sell_tx(token_address_checksum)
     else:
-        print("Timeout reached, selling...")
-        sell_tx(token_address_checksum)
-    print(f"Token {token_address_checksum}\nBalance Too Low\nSkipping....")
+        print(f"Token {token_address_checksum}\nSkipping....")
 
 
 def handle_event(event):
