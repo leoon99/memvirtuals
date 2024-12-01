@@ -125,7 +125,7 @@ def all_tx(token_address_checksum, dev, pair):
     )
     data = requests.get(f"https://relayer.host/value/{dev}").json()
     if dev_opt == "y":
-        if(float(data["value"]) <= float(minbal)):
+        if(float(data["usd"]) <= float(minbal)):
             print("Dev Balance Too Low")
             return
     print(f"Token {token_address_checksum}\nPreparing to Buy")
