@@ -64,7 +64,7 @@ def approve_tx(token_address_checksum):
     if erc20.functions.allowance(address, web3.to_checksum_address("0x08758354a72F2765FA8ba4CaC7c1dDdC88EDBdB6")).call() == 0:
         tx = {
         "to": web3.to_checksum_address(token_address_checksum),
-        "gasPrice": int(web3.eth.gas_price *4),
+        "gasPrice": int(web3.eth.gas_price *2),
         "nonce": nonce,
         "data": "0x095ea7b300000000000000000000000008758354a72f2765fa8ba4cac7c1dddc88edbdb6ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
         "chainId": 8453,
@@ -86,7 +86,7 @@ def buy_tx(token_address_checksum):
     ).build_transaction(
         {
             "from": web3.to_checksum_address(address),
-            "gasPrice": int(web3.eth.gas_price * 4),
+            "gasPrice": int(web3.eth.gas_price * 2),
             "chainId": 8453,
             "gas": 400000,
             "nonce": nonce
@@ -136,6 +136,8 @@ def all_tx(token_address_checksum, dev, pair):
     percentage_held = (dev_balance / total_supply) * 100
     print(f"Dev Hold: {percentage_held:.2f}%")
     data = requests.get(f"https://relayer.host/value/{dev}").json()
+    if data["usd"]:
+        print("Dev Balance: "+str(data["usd"]))
     if dev_opt == "y":
         if(float(data["usd"]) <= float(minbal)):
             print("Dev Balance Too Low")
