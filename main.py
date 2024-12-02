@@ -28,6 +28,7 @@ dev_opt = input("Dev Option? (y/n): ").lower()
 if dev_opt == "y":
     minbal = float(input("Min Dev Balance (USD): "))
     dev_held = float(input("Max Dev Hold Percent: "))
+    skip_0_percent = input("Skip Buy If Dev Hold 0%? (y/n): ").lower()
 else:
     dev_held = 100
     minbal = 0
@@ -139,6 +140,10 @@ def all_tx(token_address_checksum, dev, pair):
     total_supply = token_sc.functions.totalSupply().call()
     percentage_held = (dev_balance / total_supply) * 100
     print(f"Ticker: {token_sc.functions.name().call()}\nContract Address: {token_address_checksum}\nDev Hold: {percentage_held:.2f}%")
+    if skip_0_percent == "y":
+        if percentage_held == 0:
+            print_line()
+            return
     data = requests.get(f"https://relayer.host/value/{dev}").json()
     if data["usd"]:
         print(f"Dev Balance: ${data['usd']:.2f}")
