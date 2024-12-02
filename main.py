@@ -27,13 +27,17 @@ amount = web3.to_wei(float(input("Enter Amount Virtual to Snipe: ")), 'ether')
 dev_opt = input("Dev Option? (y/n): ").lower()
 if dev_opt == "y":
     minbal = float(input("Min Dev Balance (USD): "))
+    dev_held = float(input("Max Dev Hold Percent: "))
+else:
+    dev_held = 100
+    minbal = 0
 
 auto_sell = input("Auto Sell? (y/n): ").lower()
 if auto_sell == "y":
     cl = int(input("Cut Loss Percent: "))
     tp = int(input("Take Profit Percent: "))
     amount_percentage = amount / 100
-    amount_cl = (amount_percentage * 95) - (amount_percentage * cl)
+    amount_cl = (amount_percentage * 98) - (amount_percentage * cl)
     amount_tp = (amount_percentage * tp) + amount
 else:
     amount_cl = 0
@@ -123,9 +127,17 @@ def all_tx(token_address_checksum, dev, pair):
         address=web3.to_checksum_address(pair),
         abi=pair_abi
     )
+    token_sc = web3.eth.contract(
+        address=web3.to_checksum_address(token_address_checksum),
+        abi=abi_erc
+    )
+    dev_balance = token_sc.functions.balanceOf(dev).call()
+    total_supply = token_sc.functions.totalSupply().call()
+    percentage_held = (dev_balance / total_supply) * 100
+    print(f"Dev Hold: {percentage_held:.2f}%")
     data = requests.get(f"https://relayer.host/value/{dev}").json()
     if dev_opt == "y":
-        if(float(data["usd"]) <= float(minbal)):
+        if(float(data["value"]) <= float(minbal)):
             print("Dev Balance Too Low")
             return
     print(f"Token {token_address_checksum}\nPreparing to Buy")
@@ -135,6 +147,10 @@ def all_tx(token_address_checksum, dev, pair):
     )
     balance = virtual_contract.functions.balanceOf(address).call()
     if balance >= amount:
+        if float(percentage_held) >= float(dev_held):
+            print("Dev Hold Too High")
+            return
+        
         buy_tx(token_address_checksum)
     else:
         print("Not Enough Virtual Balance")
