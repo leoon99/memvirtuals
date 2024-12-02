@@ -193,8 +193,6 @@ def all_tx(token_address_checksum, dev, pair):
                 print("Timeout reached, selling...")
                 break
             sell_tx(token_address_checksum)
-    else:
-        print(f"Token {token_address_checksum}\nSkipping....")
     print_line()
 
 
