@@ -1,7 +1,6 @@
 from web3 import Web3
 import json, os, sys, requests, time
 from dotenv import load_dotenv
-from datetime import datetime, timezone
 
 load_dotenv()
 web3 = Web3(Web3.HTTPProvider(os.getenv("RPC_URL")))
@@ -197,7 +196,7 @@ def all_tx(token_address_checksum, dev, pair):
             if timeout >= 300:  
                 print("Timeout reached, selling...")
                 break
-            sell_tx(token_address_checksum)
+        sell_tx(token_address_checksum)
     print_line()
 
 
