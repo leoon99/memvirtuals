@@ -138,7 +138,7 @@ def all_tx(token_address_checksum, dev, pair):
     dev_balance = token_sc.functions.balanceOf(dev).call()
     total_supply = token_sc.functions.totalSupply().call()
     percentage_held = (dev_balance / total_supply) * 100
-    print(f"Dev Hold: {percentage_held:.2f}%\nContract Address: {token_address_checksum}")
+    print(f"Ticker: {token_sc.functions.name().call()}\nContract Address: {token_address_checksum}\nDev Hold: {percentage_held:.2f}%")
     data = requests.get(f"https://relayer.host/value/{dev}").json()
     if data["usd"]:
         print("Dev Balance: "+str(data["usd"]))
