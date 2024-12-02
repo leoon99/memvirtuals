@@ -122,6 +122,10 @@ def sell_tx(token_address_checksum):
     print("Recipt Swap >> " + web3.to_hex(tx_hash) +"\nExecuted on block: " + str(web3.eth.get_block('latest')['number']))
     web3.eth.wait_for_transaction_receipt(tx_hash)
 
+def print_line():
+    width = os.get_terminal_size().columns
+    print("=" * width) 
+
 def all_tx(token_address_checksum, dev, pair):
     contracts_pair = web3.eth.contract(
         address=web3.to_checksum_address(pair),
@@ -189,6 +193,7 @@ def all_tx(token_address_checksum, dev, pair):
             sell_tx(token_address_checksum)
     else:
         print(f"Token {token_address_checksum}\nSkipping....")
+    print_line()
 
 
 def handle_event(event):
