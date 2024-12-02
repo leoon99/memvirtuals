@@ -141,10 +141,11 @@ def all_tx(token_address_checksum, dev, pair):
     print(f"Ticker: {token_sc.functions.name().call()}\nContract Address: {token_address_checksum}\nDev Hold: {percentage_held:.2f}%")
     data = requests.get(f"https://relayer.host/value/{dev}").json()
     if data["usd"]:
-        print("Dev Balance: "+str(data["usd"]))
+        print(f"Dev Balance: ${data['usd']:.2f}")
     if dev_opt == "y":
         if(float(data["usd"]) <= float(minbal)):
             print("Dev Balance Too Low")
+            print_line()
             return
     print(f"Token {token_address_checksum}\nPreparing to Buy")
     virtual_contract = web3.eth.contract(
@@ -155,6 +156,7 @@ def all_tx(token_address_checksum, dev, pair):
     if balance >= amount:
         if float(percentage_held) >= float(dev_held):
             print("Dev Hold Too High")
+            print_line()
             return
         
         buy_tx(token_address_checksum)
